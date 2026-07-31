@@ -1,0 +1,200 @@
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+#include "BluetoothSerial.h"
+
+#if !defined(CONFIG_BT_ENABLED)|| !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+BluetoothSerial SerialBT;
+
+Adafruit_MPU6050 mpu;
+float ADC1,ADC2,ADC3,ADC4;
+float X,Y,Z;
+int adc1=36,adc2=39,adc3=34,adc4=35;
+int i=0;
+char msg[30] = "Hello";
+
+
+void setup(void) {
+  Serial.begin(115200);
+  SerialBT.begin("Sign2Speech");
+  Serial.println("The device started, now you can pair it with bluetooth!");
+  while (!Serial)
+    delay(10); 
+
+  Serial.println("Adafruit MPU6050 test!");
+
+  // Try to initialize!
+  if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
+  Serial.println("MPU6050 Found!");
+
+  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  Serial.print("Accelerometer range set to: ");
+  switch (mpu.getAccelerometerRange()) {
+  case MPU6050_RANGE_2_G:
+    Serial.println("+-2G");
+    break;
+  case MPU6050_RANGE_4_G:
+    Serial.println("+-4G");
+    break;
+  case MPU6050_RANGE_8_G:
+    Serial.println("+-8G");
+    break;
+  case MPU6050_RANGE_16_G:
+    Serial.println("+-16G");
+    break;
+  }
+  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+  Serial.print("Gyro range set to: ");
+  switch (mpu.getGyroRange()) {
+  case MPU6050_RANGE_250_DEG:
+    Serial.println("+- 250 deg/s");
+    break;
+  case MPU6050_RANGE_500_DEG:
+    Serial.println("+- 500 deg/s");
+    break;
+  case MPU6050_RANGE_1000_DEG:
+    Serial.println("+- 1000 deg/s");
+    break;
+  case MPU6050_RANGE_2000_DEG:
+    Serial.println("+- 2000 deg/s");
+    break;
+  }
+
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  Serial.print("Filter bandwidth set to: ");
+  switch (mpu.getFilterBandwidth()) {
+  case MPU6050_BAND_260_HZ:
+    Serial.println("260 Hz");
+    break;
+  case MPU6050_BAND_184_HZ:
+    Serial.println("184 Hz");
+    break;
+  case MPU6050_BAND_94_HZ:
+    Serial.println("94 Hz");
+    break;
+  case MPU6050_BAND_44_HZ:
+    Serial.println("44 Hz");
+    break;
+  case MPU6050_BAND_21_HZ:
+    Serial.println("21 Hz");
+    break;
+  case MPU6050_BAND_10_HZ:
+    Serial.println("10 Hz");
+    break;
+  case MPU6050_BAND_5_HZ:
+    Serial.println("5 Hz");
+    break;
+  }
+
+  Serial.println("");
+  delay(100);
+}
+
+void loop() {
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+  ADC1 = analogRead(adc1);
+  ADC1 = (ADC1/(float)4095)*(float)(3.3);
+  ADC2 = analogRead(adc2);
+  ADC2 = (ADC2/(float)4095)*(float)(3.3);
+  ADC3 = analogRead(adc3);
+  ADC3 = (ADC3/(float)4095)*(float)(3.3);
+  ADC4 = analogRead(adc4);
+  ADC4 = (ADC4/(float)4095)*(float)(3.3);
+  memset(msg,'\0',30);
+  X = g.gyro.x;
+  Y = g.gyro.y;
+  Z = g.gyro.z;
+
+  if (Serial.available()) {
+    SerialBT.write(Serial.read());
+  }
+
+    if((X > 1.0) && (ADC1 > 2.0) && (ADC2 <= 2.0) && (ADC3 <= 2.3) && (ADC4 <= 2.3))
+    {
+      strcpy(msg,"Hello");
+//      Serial.println(msg);
+      Tx();
+      delay(1000);
+    }
+    else if ((X < -1.0) && (ADC1 > 2.0) && (ADC2 <= 2.0) && (ADC3 <= 2.3) && (ADC4 <= 2.3))
+    {
+      strcpy(msg,"I am Fine");
+//      Serial.println(msg);
+      Tx();
+      delay(1000);
+    }
+    else if ((Y > 1.0) && (ADC1 > 2.0) && (ADC2 <= 2.0) && (ADC3 <= 2.3) && (ADC4 <= 2.3))
+    {
+      strcpy(msg,"How are you");
+//      Serial.println(msg);
+      Tx();
+      delay(1000);
+    }
+    else if ((Y < -1.0) && (ADC1 > 2.0) && (ADC2 <= 2.0) && (ADC3 <= 2.3) && (ADC4 <= 2.3))
+    {      
+      strcpy(msg,"Thank You");
+//      Serial.println(msg);
+      Tx();
+      delay(1000);
+    }
+    else if((X > 1.0) && (ADC1 <= 2.0) && (ADC2 > 2.0) && (ADC3 <= 2.3) && (ADC4 <= 2.3))
+    {
+      strcpy(msg,"Namaskar");
+//      Serial.println(msg);
+      Tx();
+      delay(1000);
+    }
+    else if ((X < -1.0) && (ADC1 <= 2.0) && (ADC2 > 2.0) && (ADC3 <= 2.3) && (ADC4 <= 2.3))
+    {
+      strcpy(msg,"I am Ok");
+//      Serial.println(msg);
+      Tx();
+      delay(1000);
+    }
+    else if ((Y > 1.0) && (ADC1 <= 2.0) && (ADC2 > 2.0) && (ADC3 <= 2.3) && (ADC4 <= 2.3))
+    {
+      strcpy(msg,"How you");
+//      Serial.println(msg);
+      Tx();
+      delay(1000);
+    }
+    else if ((Y < -1.0) && (ADC1 <= 2.0) && (ADC2 > 2.0) && (ADC3 <= 2.3) && (ADC4 <= 2.3))
+    {      
+      strcpy(msg,"Thanks");
+//      Serial.println(msg);
+      Tx();
+      delay(1000);
+    }
+
+  delay(100);
+}
+void Tx()
+{
+  i=0;
+  while(1)
+  {
+    if(msg[i]=='\0')
+    {
+      break;
+    }
+//    Serial.println(msg[i]);
+    SerialBT.write((int)msg[i]);
+    i++;
+  }
+  Serial.println(msg);
+}
+
+
+
+
+
+
