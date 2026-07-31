@@ -1,0 +1,7 @@
+#Code editor: Visual Studio Code
+#Language: C++
+#C++ Libraries
+i)	Adafruit_MPU6050.h
+ii)	Adafruit_Sensor.h
+iii)	Wire.h
+iv)	BluetoothSerial.h
